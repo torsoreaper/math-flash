@@ -1,1625 +1,313 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Math Flash - 5-Tier Multiplication Flashcards</title>
-  <meta name="description" content="Master your multiplication tables using the 5-Tier pedagogical framework and Leitner spaced repetition. Sleek dark-mode interface with progress saving.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-  
-  <style>
-    /* CSS variables defining the design system tokens */
-    :root {
-      --bg-main: #0b0f19;
-      --bg-surface: #151d30;
-      --bg-surface-elevated: #202b44;
-      --border-color: #2e3e60;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      
-      /* Tier Colors */
-      --color-tier-1: #38bdf8; /* Sky Blue */
-      --color-tier-2: #818cf8; /* Indigo */
-      --color-tier-3: #c084fc; /* Purple */
-      --color-tier-4: #fb7185; /* Rose */
-      --color-tier-5: #fb923c; /* Orange */
-      
-      /* Feedback Colors */
-      --color-correct: #34d399;
-      --color-correct-glow: rgba(52, 211, 153, 0.25);
-      --color-wrong: #f87171;
-      --color-wrong-glow: rgba(248, 113, 113, 0.25);
-      
-      --font-outfit: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      --font-space: 'Space Grotesk', monospace;
-      
-      --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
-      --shadow-md: 0 4px 12px rgba(0,0,0,0.2);
-      --shadow-lg: 0 10px 25px rgba(0,0,0,0.3);
-      --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.15);
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      background-color: var(--bg-main);
-      color: var(--text-main);
-      font-family: var(--font-outfit);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      overflow-x: hidden;
-      position: relative;
-    }
-
-    /* Background glow elements for rich aesthetics */
-    body::before {
-      content: '';
-      position: absolute;
-      width: 400px;
-      height: 400px;
-      background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(99, 102, 241, 0) 70%);
-      top: -100px;
-      left: -100px;
-      z-index: -1;
-      pointer-events: none;
-    }
-
-    body::after {
-      content: '';
-      position: absolute;
-      width: 450px;
-      height: 450px;
-      background: radial-gradient(circle, rgba(236, 72, 153, 0.1) 0%, rgba(236, 72, 153, 0) 70%);
-      bottom: -150px;
-      right: -150px;
-      z-index: -1;
-      pointer-events: none;
-    }
-
-    header {
-      padding: 2rem 1.5rem 1rem;
-      text-align: center;
-      max-width: 1200px;
-      margin: 0 auto;
-      width: 100%;
-    }
-
-    .logo-container {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .logo-icon {
-      background: linear-gradient(135deg, #6366f1, #a855f7);
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-    }
-
-    .logo-icon svg {
-      width: 22px;
-      height: 22px;
-      fill: none;
-      stroke: white;
-      stroke-width: 2.5;
-    }
-
-    .logo-text {
-      font-family: var(--font-space);
-      font-weight: 700;
-      font-size: 2rem;
-      letter-spacing: -0.05em;
-      background: linear-gradient(to right, #f8fafc, #cbd5e1);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .subtitle {
-      color: var(--text-muted);
-      font-size: 1.05rem;
-      font-weight: 400;
-      max-width: 600px;
-      margin: 0.25rem auto 0;
-      line-height: 1.5;
-    }
-
-    main {
-      flex: 1;
-      width: 100%;
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 1.5rem;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      z-index: 10;
-    }
-
-    /* --- MENU SCREEN --- */
-    .menu-screen {
-      display: flex;
-      flex-direction: column;
-      gap: 2rem;
-      animation: fadeIn 0.4s ease-out;
-    }
-
-    .menu-intro-card {
-      background: linear-gradient(135deg, rgba(21, 29, 48, 0.7) 0%, rgba(21, 29, 48, 0.9) 100%);
-      border: 1px solid var(--border-color);
-      border-radius: 20px;
-      padding: 2rem;
-      text-align: center;
-      box-shadow: var(--shadow-lg);
-      backdrop-filter: blur(10px);
-    }
-
-    .menu-intro-card h2 {
-      font-size: 1.6rem;
-      margin-bottom: 0.75rem;
-      font-weight: 700;
-    }
-
-    .menu-intro-card p {
-      color: var(--text-muted);
-      font-size: 1rem;
-      line-height: 1.6;
-      max-width: 650px;
-      margin: 0 auto 1.5rem;
-    }
-
-    .global-stats-bar {
-      display: flex;
-      justify-content: center;
-      gap: 3rem;
-      border-top: 1px solid var(--border-color);
-      padding-top: 1.5rem;
-    }
-
-    .stat-box {
-      text-align: center;
-    }
-
-    .stat-value {
-      font-family: var(--font-space);
-      font-size: 1.75rem;
-      font-weight: 700;
-      color: #6366f1;
-      margin-bottom: 0.25rem;
-    }
-
-    .stat-label {
-      color: var(--text-muted);
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .tiers-list {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 1.25rem;
-    }
-
-    @media (min-width: 640px) {
-      .tiers-list {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .tier-card {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-color);
-      border-radius: 18px;
-      padding: 1.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1.5rem;
-      cursor: pointer;
-      position: relative;
-      overflow: hidden;
-      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-      box-shadow: var(--shadow-md);
-    }
-
-    .tier-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 6px;
-      height: 100%;
-      background-color: var(--tier-color, #fff);
-      transition: width 0.2s ease;
-    }
-
-    .tier-card:hover {
-      transform: translateY(-4px) scale(1.01);
-      border-color: var(--tier-color);
-      box-shadow: 0 12px 20px -10px rgba(0, 0, 0, 0.5), 0 0 15px -3px rgba(99, 102, 241, 0.15);
-    }
-
-    .tier-card:hover::before {
-      width: 10px;
-    }
-
-    .tier-details {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-    }
-
-    .tier-meta {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    .tier-number {
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: var(--tier-color);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .tier-examples {
-      font-size: 0.8rem;
-      background: rgba(255,255,255,0.05);
-      padding: 0.1rem 0.5rem;
-      border-radius: 6px;
-      color: var(--text-muted);
-      font-family: var(--font-space);
-    }
-
-    .tier-title {
-      font-size: 1.25rem;
-      font-weight: 700;
-      margin-top: 0.1rem;
-    }
-
-    .tier-desc {
-      color: var(--text-muted);
-      font-size: 0.9rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .tier-progress-container {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      width: 100%;
-      max-width: 300px;
-    }
-
-    .tier-progress-bar-bg {
-      flex: 1;
-      height: 8px;
-      background-color: rgba(255,255,255,0.05);
-      border-radius: 4px;
-      overflow: hidden;
-      border: 1px solid rgba(255,255,255,0.05);
-    }
-
-    .tier-progress-bar-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #6366f1, var(--tier-color));
-      width: 0%;
-      border-radius: 4px;
-      transition: width 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
-    }
-
-    .tier-progress-text {
-      font-family: var(--font-space);
-      font-size: 0.85rem;
-      font-weight: 700;
-      min-width: 45px;
-      text-align: right;
-    }
-
-    .tier-action {
-      background: var(--bg-surface-elevated);
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 1px solid var(--border-color);
-      color: var(--text-main);
-      transition: all 0.2s ease;
-    }
-
-    .tier-card:hover .tier-action {
-      background: var(--tier-color);
-      border-color: var(--tier-color);
-      color: var(--bg-main);
-      transform: translateX(3px);
-    }
-
-    .tier-action svg {
-      width: 20px;
-      height: 20px;
-      fill: none;
-      stroke: currentColor;
-      stroke-width: 2;
-      transition: transform 0.2s ease;
-    }
-
-    .reset-all-btn {
-      align-self: center;
-      background: transparent;
-      border: 1px solid rgba(248, 113, 113, 0.3);
-      color: rgba(248, 113, 113, 0.8);
-      font-family: var(--font-outfit);
-      font-size: 0.9rem;
-      padding: 0.6rem 1.2rem;
-      border-radius: 10px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      transition: all 0.2s ease;
-      margin-top: 1rem;
-    }
-
-    .reset-all-btn:hover {
-      background: rgba(248, 113, 113, 0.1);
-      color: rgba(248, 113, 113, 1);
-      border-color: rgba(248, 113, 113, 0.6);
-    }
-
-    /* --- PRACTICE SCREEN --- */
-    .practice-screen {
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-      animation: fadeIn 0.4s ease-out;
-    }
-
-    .practice-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-    }
-
-    .back-btn {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-color);
-      color: var(--text-main);
-      font-family: var(--font-outfit);
-      font-size: 0.95rem;
-      padding: 0.6rem 1.2rem;
-      border-radius: 12px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      transition: all 0.2s ease;
-      box-shadow: var(--shadow-sm);
-    }
-
-    .back-btn:hover {
-      background: var(--bg-surface-elevated);
-      border-color: var(--text-muted);
-      transform: translateX(-3px);
-    }
-
-    .back-btn svg {
-      width: 18px;
-      height: 18px;
-      fill: none;
-      stroke: currentColor;
-      stroke-width: 2.5;
-    }
-
-    .session-stats {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    .streak-badge {
-      background: rgba(251, 146, 60, 0.1);
-      border: 1px solid rgba(251, 146, 60, 0.3);
-      color: #fb923c;
-      padding: 0.4rem 0.8rem;
-      border-radius: 10px;
-      font-weight: 700;
-      font-size: 0.95rem;
-      display: flex;
-      align-items: center;
-      gap: 0.35rem;
-      font-family: var(--font-space);
-    }
-
-    .streak-badge.gold {
-      animation: flame-pulse 1.5s infinite alternate;
-    }
-
-    @keyframes flame-pulse {
-      0% { box-shadow: 0 0 5px rgba(251, 146, 60, 0.2); }
-      100% { box-shadow: 0 0 15px rgba(251, 146, 60, 0.5); }
-    }
-
-    .accuracy-badge {
-      background: rgba(99, 102, 241, 0.1);
-      border: 1px solid rgba(99, 102, 241, 0.3);
-      color: #818cf8;
-      padding: 0.4rem 0.8rem;
-      border-radius: 10px;
-      font-weight: 700;
-      font-size: 0.95rem;
-      font-family: var(--font-space);
-    }
-
-    /* 3D Flashcard styles */
-    .flashcard-wrapper {
-      perspective: 1000px;
-      width: 100%;
-      height: 280px;
-      margin: 0.5rem auto;
-      position: relative;
-    }
-
-    .flashcard {
-      width: 100%;
-      height: 100%;
-      position: relative;
-      transform-style: preserve-3d;
-      transition: transform 0.6s cubic-bezier(0.2, 0.85, 0.32, 1.2);
-      cursor: pointer;
-    }
-
-    .flashcard.flipped {
-      transform: rotateY(180deg);
-    }
-
-    .card-face {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      backface-visibility: hidden;
-      border-radius: 24px;
-      border: 2px solid var(--border-color);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem;
-      box-shadow: var(--shadow-lg);
-      transition: all 0.3s ease;
-    }
-
-    .card-front {
-      background: linear-gradient(135deg, var(--bg-surface) 0%, rgba(21, 29, 48, 0.8) 100%);
-      color: var(--text-main);
-      z-index: 2;
-    }
-
-    .card-back {
-      background: linear-gradient(135deg, var(--bg-surface-elevated) 0%, var(--bg-surface) 100%);
-      color: var(--text-main);
-      transform: rotateY(180deg);
-    }
-
-    /* Glow feedback cards */
-    .flashcard.correct .card-back {
-      border-color: var(--color-correct);
-      box-shadow: 0 0 35px var(--color-correct-glow);
-    }
-
-    .flashcard.wrong .card-back {
-      border-color: var(--color-wrong);
-      box-shadow: 0 0 35px var(--color-wrong-glow);
-    }
-
-    .equation-display {
-      font-family: var(--font-space);
-      font-weight: 700;
-      font-size: 4.5rem;
-      letter-spacing: -0.02em;
-      user-select: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 1rem;
-    }
-
-    .equation-display .operand {
-      display: inline-block;
-    }
-
-    .equation-display .operator {
-      color: var(--current-tier-color, #6366f1);
-      font-weight: 500;
-      font-size: 3.5rem;
-    }
-
-    .feedback-banner {
-      margin-top: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 1.25rem;
-      font-weight: 700;
-      transform: translateY(10px);
-      opacity: 0;
-      transition: all 0.4s ease 0.2s;
-    }
-
-    .flashcard.flipped .feedback-banner {
-      transform: translateY(0);
-      opacity: 1;
-    }
-
-    .correct-text {
-      color: var(--color-correct);
-    }
-
-    .wrong-text {
-      color: var(--color-wrong);
-    }
-
-    .original-answer-comparison {
-      font-size: 0.95rem;
-      color: var(--text-muted);
-      margin-top: 0.5rem;
-    }
-
-    .card-indicator {
-      position: absolute;
-      top: 1.25rem;
-      right: 1.5rem;
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      font-family: var(--font-space);
-      background: rgba(255,255,255,0.04);
-      padding: 0.25rem 0.6rem;
-      border-radius: 8px;
-    }
-
-    .card-hint {
-      position: absolute;
-      bottom: 1.25rem;
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      display: flex;
-      align-items: center;
-      gap: 0.35rem;
-      opacity: 0.7;
-    }
-
-    .input-controls {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      width: 100%;
-    }
-
-    .input-row {
-      display: flex;
-      gap: 0.75rem;
-    }
-
-    .answer-input {
-      flex: 1;
-      background-color: var(--bg-surface);
-      border: 2px solid var(--border-color);
-      border-radius: 16px;
-      color: var(--text-main);
-      font-family: var(--font-space);
-      font-size: 1.75rem;
-      font-weight: 700;
-      padding: 0.8rem 1.2rem;
-      text-align: center;
-      outline: none;
-      transition: all 0.2s ease;
-      box-shadow: var(--shadow-sm);
-    }
-
-    .answer-input:focus {
-      border-color: var(--current-tier-color, #6366f1);
-      box-shadow: 0 0 15px rgba(99, 102, 241, 0.15);
-      background-color: var(--bg-surface-elevated);
-    }
-
-    .answer-input:disabled {
-      opacity: 0.8;
-      cursor: not-allowed;
-    }
-
-    .submit-btn {
-      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-      color: white;
-      font-family: var(--font-outfit);
-      font-weight: 600;
-      font-size: 1.1rem;
-      padding: 0.8rem 2rem;
-      border: none;
-      border-radius: 16px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      transition: all 0.2s ease;
-      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
-      min-width: 140px;
-    }
-
-    .submit-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
-    }
-
-    .submit-btn:active {
-      transform: translateY(0);
-    }
-
-    .submit-btn.next-state {
-      background: linear-gradient(135deg, var(--bg-surface-elevated) 0%, var(--bg-surface) 100%);
-      border: 2px solid var(--border-color);
-      color: var(--text-main);
-      box-shadow: var(--shadow-sm);
-    }
-
-    .submit-btn.next-state:hover {
-      background: var(--bg-surface-elevated);
-      border-color: var(--text-muted);
-      box-shadow: var(--shadow-md);
-    }
-
-    .keyboard-shortcut-tip {
-      text-align: center;
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      margin-top: -0.5rem;
-    }
-
-    .keyboard-shortcut-tip kbd {
-      background: var(--bg-surface-elevated);
-      border: 1px solid var(--border-color);
-      border-radius: 4px;
-      padding: 0.1rem 0.35rem;
-      font-family: var(--font-space);
-      font-size: 0.75rem;
-      color: var(--text-main);
-    }
-
-    /* Mobile on-screen numeric keypad */
-    .mobile-keypad {
-      display: none;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0.5rem;
-      width: 100%;
-      max-width: 400px;
-      margin: 0.5rem auto 0;
-    }
-
-    @media (max-width: 768px) {
-      .mobile-keypad {
-        display: grid;
-      }
-      .keyboard-shortcut-tip {
-        display: none;
-      }
-    }
-
-    .keypad-btn {
-      background-color: var(--bg-surface);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      color: var(--text-main);
-      font-family: var(--font-space);
-      font-size: 1.3rem;
-      font-weight: 700;
-      padding: 0.75rem 0;
-      cursor: pointer;
-      user-select: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.1s ease;
-    }
-
-    .keypad-btn:active {
-      background-color: var(--bg-surface-elevated);
-      transform: scale(0.95);
-    }
-
-    .keypad-btn.action {
-      background-color: var(--bg-surface-elevated);
-      font-weight: 500;
-      font-size: 1.05rem;
-    }
-
-    .keypad-btn.submit-key {
-      background: linear-gradient(135deg, #6366f1, #4f46e5);
-      color: white;
-    }
-
-    /* Leitner Box Status Indicator */
-    .leitner-status-container {
-      background: rgba(21, 29, 48, 0.4);
-      border: 1px solid var(--border-color);
-      border-radius: 20px;
-      padding: 1.25rem;
-      margin-top: 1rem;
-      box-shadow: var(--shadow-sm);
-    }
-
-    .leitner-title {
-      font-size: 0.85rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-muted);
-      margin-bottom: 0.75rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .leitner-boxes-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 0.5rem;
-    }
-
-    .leitner-box-column {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.35rem;
-    }
-
-    .leitner-box-bar-bg {
-      width: 100%;
-      height: 60px;
-      background: rgba(255,255,255,0.03);
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.03);
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      align-items: flex-end;
-    }
-
-    .leitner-box-bar-fill {
-      width: 100%;
-      height: 0%;
-      background: linear-gradient(to top, rgba(99, 102, 241, 0.4), var(--current-tier-color, #6366f1));
-      border-radius: 0 0 6px 6px;
-      transition: height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-    }
-
-    .leitner-box-count {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-family: var(--font-space);
-      font-size: 0.9rem;
-      font-weight: 700;
-      z-index: 2;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
-    }
-
-    .leitner-box-name {
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      text-align: center;
-      white-space: nowrap;
-    }
-
-    /* Helper Animations */
-    .shake {
-      animation: shake-anim 0.4s cubic-bezier(.36,.07,.19,.97) both;
-    }
-
-    @keyframes shake-anim {
-      10%, 90% { transform: translate3d(-2px, 0, 0); }
-      20%, 80% { transform: translate3d(4px, 0, 0); }
-      30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
-      40%, 60% { transform: translate3d(6px, 0, 0); }
-    }
-
-    .pop {
-      animation: pop-anim 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
-    }
-
-    @keyframes pop-anim {
-      0% { transform: scale(0.9); }
-      100% { transform: scale(1); }
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    footer {
-      padding: 2rem 1.5rem;
-      text-align: center;
-      color: var(--text-muted);
-      font-size: 0.85rem;
-      border-top: 1px solid rgba(255,255,255,0.03);
-      max-width: 1200px;
-      margin: 2rem auto 0;
-      width: 100%;
-    }
-
-    footer a {
-      color: #6366f1;
-      text-decoration: none;
-    }
-
-    footer a:hover {
-      text-decoration: underline;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caleb's Math Flashcards</title>
+    <style>
+        :root {
+            --bg-primary: #121212;
+            --bg-surface: #1e1e1e;
+            --accent: #3b82f6;
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --border: #334155;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        h1 { margin-bottom: 5px; color: var(--text-main); }
+        .subtitle { color: var(--text-muted); margin-bottom: 25px; }
+
+        .config-panel {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 30px;
+        }
+
+        .tier-row {
+            display: flex;
+            align-items: flex-start;
+            margin: 15px 0;
+            font-size: 0.95rem;
+        }
+
+        .tier-row input { margin-top: 4px; margin-right: 12px; transform: scale(1.2); }
+        .tier-label { font-weight: 600; display: block; margin-bottom: 4px; }
+        .tier-desc { color: var(--text-muted); font-size: 0.85rem; display: block; line-height: 1.4; }
+
+        button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+        }
+        button:hover { opacity: 0.9; }
+
+        /* Flashcard Container & Flip Mechanics */
+        .card-container {
+            width: 100%;
+            max-width: 400px;
+            height: 250px;
+            perspective: 1000px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.4s ease;
+            cursor: pointer;
+        }
+
+        .card.flipped { transform: rotateY(180deg); }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 12px;
+            border: 2px solid var(--border);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            box-sizing: border-box;
+            flex-direction: column;
+        }
+
+        .card-front {
+            background: var(--bg-surface);
+            color: var(--text-main);
+            font-size: 4.5rem;
+        }
+        
+        .strategy-hint {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            font-weight: normal;
+            margin-top: 15px;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        .card-back {
+            background: #15803d;
+            color: white;
+            font-size: 5rem;
+            transform: rotateY(180deg);
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            width: 100%;
+            max-width: 400px;
+            display: none;
+        }
+        
+        .controls button { margin-top: 0; }
+        .secondary-btn { background: #334155; }
+    </style>
 </head>
 <body>
 
-  <header>
-    <div class="logo-container">
-      <div class="logo-icon">
-        <svg viewBox="0 0 24 24">
-          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-        </svg>
-      </div>
-      <h1 class="logo-text">MATH FLASH</h1>
-    </div>
-    <p class="subtitle">Pedagogical 5-Tier Multiplication & Leitner Spaced Repetition</p>
-  </header>
+    <h1>Caleb's Flashcards</h1>
+    <div class="subtitle">Multiplication Tier System</div>
 
-  <main>
-    <!-- MENU SCREEN -->
-    <div id="menuScreen" class="menu-screen">
-      <div class="menu-intro-card">
-        <h2>Welcome to the 5-Tier Method</h2>
-        <p>
-          Master multiplication facts using cognitive science. Tiers group facts by pedagogical difficulty. The Leitner system monitors your memory: correct answers show up less often, while wrong ones return to Box 1 for immediate practice.
-        </p>
-        <div class="global-stats-bar">
-          <div class="stat-box">
-            <div id="globalMasteryVal" class="stat-value">0%</div>
-            <div class="stat-label">Total Mastery</div>
-          </div>
-          <div class="stat-box">
-            <div id="streakVal" class="stat-value">0</div>
-            <div class="stat-label">Best Streak</div>
-          </div>
-          <div class="stat-box">
-            <div id="cardsMasteredVal" class="stat-value">0/78</div>
-            <div class="stat-label">Facts Mastered</div>
-          </div>
+    <div class="config-panel" id="config">
+        <h3>Select Active Tiers</h3>
+        
+        <div class="tier-row">
+            <input type="checkbox" value="1" checked id="t1">
+            <div>
+                <label class="tier-label" for="t1">Tier 1: The Foundations (2s, 5s, 10s)</label>
+                <span class="tier-desc">Doubles, clock faces, and shifting the place value.</span>
+            </div>
         </div>
-      </div>
+        
+        <div class="tier-row">
+            <input type="checkbox" value="2" id="t2">
+            <div>
+                <label class="tier-label" for="t2">Tier 2: The Perfect Squares</label>
+                <span class="tier-desc">The geometric diagonals (3x3 up to 9x9).</span>
+            </div>
+        </div>
 
-      <div class="tiers-list" id="tiersListContainer">
-        <!-- Tier Cards will be inserted here dynamically -->
-      </div>
+        <div class="tier-row">
+            <input type="checkbox" value="3" id="t3">
+            <div>
+                <label class="tier-label" for="t3">Tier 3: The 9s Pattern Trick</label>
+                <span class="tier-desc">Tens digit is N-1; sum of digits equals 9.</span>
+            </div>
+        </div>
 
-      <button id="resetAllBtn" class="reset-all-btn">
-        <svg style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2" viewBox="0 0 24 24">
-          <path d="M19 11A7 7 0 0 1 11.5 18M19 11v-4m0 4h-4M5 13a7 7 0 0 1 7.5-7M5 13v4m0-4h4"/>
-        </svg>
-        Reset Progress
-      </button>
+        <div class="tier-row">
+            <input type="checkbox" value="4" id="t4">
+            <div>
+                <label class="tier-label" for="t4">Tier 4: The 3s and 4s (Derivations)</label>
+                <span class="tier-desc">4s: Double-double. 3s: Double plus one more group.</span>
+            </div>
+        </div>
+
+        <div class="tier-row">
+            <input type="checkbox" value="5" id="t5">
+            <div>
+                <label class="tier-label" for="t5">Tier 5: The Final Focus</label>
+                <span class="tier-desc">The last 4 facts: 6x7, 6x8, 7x8, and 7x6.</span>
+            </div>
+        </div>
+
+        <button onclick="startSession()">Start Practice</button>
     </div>
 
-    <!-- PRACTICE SCREEN -->
-    <div id="practiceScreen" class="practice-screen hidden">
-      <div class="practice-header">
-        <button id="backBtn" class="back-btn">
-          <svg viewBox="0 0 24 24">
-            <polyline points="15 18 9 12 15 6"></polyline>
-          </svg>
-          Back to Menu
-        </button>
-        <div class="session-stats">
-          <span id="streakBadge" class="streak-badge">
-            <span style="font-size:1.1rem">🔥</span>
-            <span id="sessionStreak">0</span>
-          </span>
-          <span class="accuracy-badge" id="sessionAccuracy">
-            Acc: 100%
-          </span>
+    <div class="card-container" id="cardContainer" onclick="flipCard()">
+        <div class="card" id="card">
+            <div class="card-face card-front">
+                <div id="frontText">--</div>
+                <div id="strategyHint" class="strategy-hint"></div>
+            </div>
+            <div class="card-face card-back" id="backText">--</div>
         </div>
-      </div>
+    </div>
 
-      <div class="flashcard-wrapper">
-        <div class="flashcard" id="flashcard">
-          <!-- FRONT FACE -->
-          <div class="card-face card-front">
-            <span class="card-indicator" id="cardTierName">Tier 1</span>
-            <div class="equation-display">
-              <span class="operand" id="operandA">7</span>
-              <span class="operator">×</span>
-              <span class="operand" id="operandB">8</span>
-            </div>
-            <div class="card-hint">
-              <svg style="width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="16" x2="12" y2="12"></line>
-                <line x1="12" y1="8" x2="12.01" y2="8"></line>
-              </svg>
-              Type your answer below
-            </div>
-          </div>
-          
-          <!-- BACK FACE -->
-          <div class="card-face card-back">
-            <div class="equation-display">
-              <span id="eqLeft">7</span>
-              <span class="operator">×</span>
-              <span id="eqRight">8</span>
-              <span class="operator" style="font-size:3.5rem;color:var(--text-main)">=</span>
-              <span id="eqResult" style="color: var(--text-main)">56</span>
-            </div>
+    <div class="controls" id="controls">
+        <button class="secondary-btn" onclick="exitSession()">Change Tiers</button>
+        <button onclick="nextCard()">Next Card</button>
+    </div>
+
+    <script>
+        // Define exact problem sets for the 5 tiers based on user specification
+        let problemSets = {
+            1: [], // 2s, 5s, 10s
+            2: [], // Perfect squares
+            3: [], // 9s
+            4: [], // 3s, 4s
+            5: [   // Heavy lifters
+                { f1: 6, f2: 7, strategy: "Heavy Lifter!" },
+                { f1: 6, f2: 8, strategy: "Heavy Lifter!" },
+                { f1: 7, f2: 8, strategy: "Heavy Lifter!" },
+                { f1: 7, f2: 6, strategy: "Commutative Duplicate!" }
+            ]
+        };
+
+        // Populate Tier 1 (2s, 5s, 10s up to x12, avoiding overlaps with higher tiers where possible to keep focus)
+        [2, 5, 10].forEach(factor => {
+            let strategy = "";
+            if (factor === 2) strategy = "Just like addition: Doubles!";
+            if (factor === 5) strategy = "Look at the clock face or alternate 0/5.";
+            if (factor === 10) strategy = "Shift the digit and add a zero.";
             
-            <div class="feedback-banner" id="feedbackBanner">
-              <!-- Dynamically populated correct/wrong feedback -->
-            </div>
-            <div class="original-answer-comparison" id="comparisonText">
-              Your answer: 54
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="input-controls">
-        <div class="input-row">
-          <input 
-            type="text" 
-            pattern="[0-9]*" 
-            inputmode="numeric" 
-            id="answerInput" 
-            class="answer-input" 
-            placeholder="Answer"
-            autocomplete="off" 
-            autofocus
-          >
-          <button id="submitBtn" class="submit-btn">
-            Submit
-          </button>
-        </div>
-        <div class="keyboard-shortcut-tip">
-          Tip: Press <kbd>Enter</kbd> to submit and advance.
-        </div>
-      </div>
-
-      <!-- Mobile Virtual Keypad -->
-      <div class="mobile-keypad" id="keypad">
-        <button class="keypad-btn" data-val="1">1</button>
-        <button class="keypad-btn" data-val="2">2</button>
-        <button class="keypad-btn" data-val="3">3</button>
-        <button class="keypad-btn" data-val="4">4</button>
-        <button class="keypad-btn" data-val="5">5</button>
-        <button class="keypad-btn" data-val="6">6</button>
-        <button class="keypad-btn" data-val="7">7</button>
-        <button class="keypad-btn" data-val="8">8</button>
-        <button class="keypad-btn" data-val="9">9</button>
-        <button class="keypad-btn action" data-val="delete">⌫</button>
-        <button class="keypad-btn" data-val="0">0</button>
-        <button class="keypad-btn submit-key" id="keypadSubmit" data-val="submit">✔</button>
-      </div>
-
-      <!-- Leitner Box Distribution -->
-      <div class="leitner-status-container">
-        <div class="leitner-title">
-          <span>Card Box Locations (Leitner System)</span>
-          <span style="font-size:0.8rem;text-transform:none;color:var(--text-muted)">Weaker cards stay in Box 1</span>
-        </div>
-        <div class="leitner-boxes-row">
-          <div class="leitner-box-column">
-            <div class="leitner-box-bar-bg">
-              <div class="leitner-box-bar-fill" id="boxFill1"></div>
-              <div class="leitner-box-count" id="boxCount1">0</div>
-            </div>
-            <div class="leitner-box-name">Box 1</div>
-          </div>
-          <div class="leitner-box-column">
-            <div class="leitner-box-bar-bg">
-              <div class="leitner-box-bar-fill" id="boxFill2"></div>
-              <div class="leitner-box-count" id="boxCount2">0</div>
-            </div>
-            <div class="leitner-box-name">Box 2</div>
-          </div>
-          <div class="leitner-box-column">
-            <div class="leitner-box-bar-bg">
-              <div class="leitner-box-bar-fill" id="boxFill3"></div>
-              <div class="leitner-box-count" id="boxCount3">0</div>
-            </div>
-            <div class="leitner-box-name">Box 3</div>
-          </div>
-          <div class="leitner-box-column">
-            <div class="leitner-box-bar-bg">
-              <div class="leitner-box-bar-fill" id="boxFill4"></div>
-              <div class="leitner-box-count" id="boxCount4">0</div>
-            </div>
-            <div class="leitner-box-name">Box 4</div>
-          </div>
-          <div class="leitner-box-column">
-            <div class="leitner-box-bar-bg">
-              <div class="leitner-box-bar-fill" id="boxFill5"></div>
-              <div class="leitner-box-count" id="boxCount5">0</div>
-            </div>
-            <div class="leitner-box-name">Box 5</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </main>
-
-  <footer>
-    <p>Math Flash &copy; 2026. Made with Google Antigravity. Backed by science.</p>
-  </footer>
-
-  <script>
-    // --- APP CONFIG & DATA ---
-    const TIERS = {
-      1: {
-        number: 1,
-        name: "Foundational Facts",
-        desc: "Multiples of 0, 1, 2, and 10",
-        examples: "2×4, 10×7, 1×12",
-        color: "var(--color-tier-1)",
-        facts: []
-      },
-      2: {
-        number: 2,
-        name: "Easy Strategies",
-        desc: "Multiples of 3, 4, and 5",
-        examples: "3×6, 4×8, 5×9",
-        color: "var(--color-tier-2)",
-        facts: []
-      },
-      3: {
-        number: 3,
-        name: "Intermediate & Squares",
-        desc: "Multiples of 6, 9, and Perfect Squares",
-        examples: "6×7, 9×8, 7×7",
-        color: "var(--color-tier-3)",
-        facts: []
-      },
-      4: {
-        number: 4,
-        name: "Difficult Facts",
-        desc: "Multiples of 7 and 8 (excluding lower tiers)",
-        examples: "7×8, 8×7",
-        color: "var(--color-tier-4)",
-        facts: []
-      },
-      5: {
-        number: 5,
-        name: "Extension Facts",
-        desc: "Double-digit tables (11s and 12s)",
-        examples: "11×11, 11×12, 12×12",
-        color: "var(--color-tier-5)",
-        facts: []
-      }
-    };
-
-    // Leitner Box Weights for selection probability
-    const BOX_WEIGHTS = {
-      1: 16,
-      2: 8,
-      3: 4,
-      4: 2,
-      5: 1
-    };
-
-    // --- APP STATE ---
-    let progress = {}; // format: { '3_4': 2 } (fact key -> box 1 to 5)
-    let bestStreak = 0;
-    
-    let currentTier = null;
-    let currentDeck = []; // facts in active tier
-    let currentCard = null;
-    let isFlipped = false;
-    let lastShownKeys = [];
-    
-    // Session metrics
-    let sessionStreak = 0;
-    let sessionTotal = 0;
-    let sessionCorrect = 0;
-
-    // --- PEDAGOGICAL FACT GENERATION ---
-    function getFactTier(a, b) {
-      // Tier 1: At least one factor is in {0, 1, 2, 10}
-      if (a === 0 || a === 1 || a === 2 || a === 10 || b === 0 || b === 1 || b === 2 || b === 10) {
-        return 1;
-      }
-      // Tier 2: At least one factor is in {3, 4, 5}
-      if (a === 3 || a === 4 || a === 5 || b === 3 || b === 4 || b === 5) {
-        return 2;
-      }
-      // Tier 3: Either at least one factor is in {6, 9} OR it's a square (a === b)
-      if (a === 6 || a === 9 || b === 6 || b === 9 || a === b) {
-        return 3;
-      }
-      // Tier 4: At least one factor is in {7, 8}
-      if (a === 7 || a === 8 || b === 7 || b === 8) {
-        return 4;
-      }
-      // Tier 5: At least one factor is in {11, 12}
-      if (a === 11 || a === 12 || b === 11 || b === 12) {
-        return 5;
-      }
-      return null;
-    }
-
-    function initTiers() {
-      // Clear previous lists
-      for (const t in TIERS) {
-        TIERS[t].facts = [];
-      }
-      
-      // Generate unique facts from 0x0 to 12x12
-      // A <= B is used to store progress once per commutative pair
-      for (let a = 0; a <= 12; a++) {
-        for (let b = a; b <= 12; b++) {
-          const tier = getFactTier(a, b);
-          if (tier && TIERS[tier]) {
-            TIERS[tier].facts.push({
-              a: a,
-              b: b,
-              key: `${a}_${b}`,
-              ans: a * b
-            });
-          }
-        }
-      }
-    }
-
-    // --- PROGRESS SAVING & CALCULATIONS ---
-    function loadProgress() {
-      const savedProg = localStorage.getItem('math_flash_progress');
-      const savedStreak = localStorage.getItem('math_flash_best_streak');
-      
-      if (savedProg) {
-        try {
-          progress = JSON.parse(savedProg);
-        } catch (e) {
-          progress = {};
-        }
-      }
-      if (savedStreak) {
-        bestStreak = parseInt(savedStreak, 10) || 0;
-      }
-    }
-
-    function saveProgress() {
-      localStorage.setItem('math_flash_progress', JSON.stringify(progress));
-      localStorage.setItem('math_flash_best_streak', bestStreak.toString());
-    }
-
-    function getCardBox(key) {
-      return progress[key] || 1;
-    }
-
-    function getTierMastery(tierId) {
-      const tier = TIERS[tierId];
-      if (!tier || tier.facts.length === 0) return 0;
-      
-      let sum = 0;
-      tier.facts.forEach(fact => {
-        const box = getCardBox(fact.key);
-        // Box 1 -> 0 points, Box 5 -> 4 points (max)
-        sum += (box - 1);
-      });
-      
-      const maxScore = tier.facts.length * 4;
-      return Math.round((sum / maxScore) * 100);
-    }
-
-    function getOverallStats() {
-      let totalFacts = 78; // unique multiplication facts between 0x0 and 12x12 in our tiers
-      let totalSum = 0;
-      let totalMax = totalFacts * 4;
-      let masteredCount = 0;
-      
-      for (const t in TIERS) {
-        TIERS[t].facts.forEach(fact => {
-          const box = getCardBox(fact.key);
-          totalSum += (box - 1);
-          if (box === 5) {
-            masteredCount++;
-          }
+            for (let i = 0; i <= 12; i++) {
+                problemSets[1].push({ f1: factor, f2: i, strategy: strategy });
+            }
         });
-      }
-      
-      return {
-        mastery: Math.round((totalSum / totalMax) * 100),
-        masteredCount: masteredCount,
-        totalFacts: totalFacts
-      };
-    }
 
-    // --- LEITNER SELECTOR ---
-    function getNextCard() {
-      if (currentDeck.length === 0) return null;
-      
-      // Determine how many cards to keep in the memory blacklist to avoid immediate repeats
-      const blacklistLength = Math.min(5, Math.max(1, Math.floor(currentDeck.length / 2) - 1));
-      
-      // Filter out blacklisted cards
-      let pool = currentDeck.filter(card => !lastShownKeys.includes(card.key));
-      if (pool.length === 0) pool = currentDeck; // Fallback if blacklist is too restrictive
-      
-      // Calculate selection probabilities based on Leitner Box weight
-      let totalWeight = 0;
-      const poolWithWeights = pool.map(card => {
-        const box = getCardBox(card.key);
-        const weight = BOX_WEIGHTS[box] || 1;
-        totalWeight += weight;
-        return { card, weight };
-      });
-      
-      // Random draw
-      const rnd = Math.random() * totalWeight;
-      let acc = 0;
-      let selected = poolWithWeights[0].card;
-      
-      for (const item of poolWithWeights) {
-        acc += item.weight;
-        if (rnd <= acc) {
-          selected = item.card;
-          break;
+        // Populate Tier 2 (Perfect Squares 3x3 to 9x9)
+        for (let i = 3; i <= 9; i++) {
+            problemSets[2].push({ f1: i, f2: i, strategy: "Perfect Square Symmetry!" });
         }
-      }
-      
-      // Update blacklist
-      lastShownKeys.push(selected.key);
-      if (lastShownKeys.length > blacklistLength) {
-        lastShownKeys.shift();
-      }
-      
-      return selected;
-    }
 
-    // --- DOM INTERACTION / UI RENDERERS ---
-    const menuScreen = document.getElementById('menuScreen');
-    const practiceScreen = document.getElementById('practiceScreen');
-    const tiersListContainer = document.getElementById('tiersListContainer');
-    const answerInput = document.getElementById('answerInput');
-    const submitBtn = document.getElementById('submitBtn');
-    const flashcard = document.getElementById('flashcard');
-    const backBtn = document.getElementById('backBtn');
-    const resetAllBtn = document.getElementById('resetAllBtn');
-    
-    // Stats elements
-    const globalMasteryVal = document.getElementById('globalMasteryVal');
-    const streakVal = document.getElementById('streakVal');
-    const cardsMasteredVal = document.getElementById('cardsMasteredVal');
-    const sessionStreakEl = document.getElementById('sessionStreak');
-    const sessionAccuracyEl = document.getElementById('sessionAccuracy');
-    
-    // Practice fields
-    const operandA = document.getElementById('operandA');
-    const operandB = document.getElementById('operandB');
-    const eqLeft = document.getElementById('eqLeft');
-    const eqRight = document.getElementById('eqRight');
-    const eqResult = document.getElementById('eqResult');
-    const feedbackBanner = document.getElementById('feedbackBanner');
-    const comparisonText = document.getElementById('comparisonText');
-    const cardTierName = document.getElementById('cardTierName');
-    
-    // Keypad
-    const keypad = document.getElementById('keypad');
-
-    function renderMenu() {
-      // Load global stats
-      const stats = getOverallStats();
-      globalMasteryVal.textContent = `${stats.mastery}%`;
-      streakVal.textContent = bestStreak;
-      cardsMasteredVal.textContent = `${stats.masteredCount}/${stats.totalFacts}`;
-      
-      // Render tier cards
-      tiersListContainer.innerHTML = '';
-      for (const tId in TIERS) {
-        const tier = TIERS[tId];
-        const mastery = getTierMastery(tId);
-        
-        const cardHtml = `
-          <div class="tier-card" style="--tier-color: ${tier.color}" onclick="startPractice(${tId})">
-            <div class="tier-details">
-              <div class="tier-meta">
-                <span class="tier-number">Tier ${tier.number}</span>
-                <span class="tier-examples">${tier.examples}</span>
-              </div>
-              <h3 class="tier-title">${tier.name}</h3>
-              <p class="tier-desc">${tier.desc}</p>
-              
-              <div class="tier-progress-container">
-                <div class="tier-progress-bar-bg">
-                  <div class="tier-progress-bar-fill" style="width: ${mastery}%"></div>
-                </div>
-                <span class="tier-progress-text">${mastery}%</span>
-              </div>
-            </div>
-            <div class="tier-action">
-              <svg viewBox="0 0 24 24">
-                <polyline points="9 18 15 12 9 6"></polyline>
-              </svg>
-            </div>
-          </div>
-        `;
-        tiersListContainer.insertAdjacentHTML('beforeend', cardHtml);
-      }
-    }
-
-    function updateLeitnerBars() {
-      if (!currentTier) return;
-      const counts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-      
-      currentDeck.forEach(card => {
-        const box = getCardBox(card.key);
-        counts[box] = (counts[box] || 0) + 1;
-      });
-      
-      const total = currentDeck.length;
-      for (let b = 1; b <= 5; b++) {
-        const fill = document.getElementById(`boxFill${b}`);
-        const cnt = document.getElementById(`boxCount${b}`);
-        const pct = (counts[b] / total) * 100;
-        
-        fill.style.height = `${pct}%`;
-        cnt.textContent = counts[b];
-      }
-    }
-
-    // --- GAMEPLAY FLOW ---
-    function startPractice(tierId) {
-      currentTier = TIERS[tierId];
-      currentDeck = currentTier.facts;
-      lastShownKeys = [];
-      
-      // Reset session metrics
-      sessionStreak = 0;
-      sessionTotal = 0;
-      sessionCorrect = 0;
-      
-      // Set CSS variables for theme coloration based on tier
-      document.documentElement.style.setProperty('--current-tier-color', currentTier.color);
-      cardTierName.textContent = `Tier ${currentTier.number} • ${currentTier.name}`;
-      
-      // Transition screen
-      menuScreen.classList.add('hidden');
-      practiceScreen.classList.remove('hidden');
-      
-      updateSessionMetricsUI();
-      updateLeitnerBars();
-      setupNextCard();
-    }
-
-    function exitPractice() {
-      practiceScreen.classList.add('hidden');
-      menuScreen.classList.remove('hidden');
-      currentTier = null;
-      renderMenu();
-    }
-
-    function setupNextCard() {
-      currentCard = getNextCard();
-      if (!currentCard) return;
-      
-      isFlipped = false;
-      flashcard.classList.remove('flipped', 'correct', 'wrong');
-      
-      // Randomize display orientation (A x B or B x A) for practice coverage
-      const displayA = Math.random() > 0.5 ? currentCard.a : currentCard.b;
-      const displayB = displayA === currentCard.a ? currentCard.b : currentCard.a;
-      
-      operandA.textContent = displayA;
-      operandB.textContent = displayB;
-      
-      eqLeft.textContent = displayA;
-      eqRight.textContent = displayB;
-      eqResult.textContent = currentCard.ans;
-      
-      answerInput.value = '';
-      answerInput.disabled = false;
-      
-      submitBtn.textContent = 'Submit';
-      submitBtn.classList.remove('next-state');
-      
-      // Focus element for typing
-      setTimeout(() => answerInput.focus(), 50);
-    }
-
-    function checkAnswer() {
-      if (isFlipped) {
-        // Advanced state: user clicked "Next"
-        setupNextCard();
-        return;
-      }
-      
-      const rawInput = answerInput.value.trim();
-      if (rawInput === '') {
-        // Shake to indicate input required
-        flashcard.classList.add('shake');
-        setTimeout(() => flashcard.classList.remove('shake'), 400);
-        return;
-      }
-      
-      const userAnswer = parseInt(rawInput, 10);
-      const isCorrect = (userAnswer === currentCard.ans);
-      
-      sessionTotal++;
-      if (isCorrect) {
-        sessionCorrect++;
-        sessionStreak++;
-        if (sessionStreak > bestStreak) {
-          bestStreak = sessionStreak;
+        // Populate Tier 3 (9s pattern trick)
+        for (let i = 2; i <= 9; i++) {
+            if (i !== 9) { // 9x9 is in squares
+                problemSets[3].push({ 
+                    f1: 9, f2: i, 
+                    strategy: `Tens digit is ${i}-1. Sum of digits = 9.` 
+                });
+            }
         }
-        
-        // Elevate box
-        const currentBox = getCardBox(currentCard.key);
-        progress[currentCard.key] = Math.min(5, currentBox + 1);
-        
-        // UI correct feedback
-        flashcard.classList.add('correct');
-        feedbackBanner.innerHTML = `
-          <svg style="width:24px;height:24px;stroke:var(--color-correct);stroke-width:3" viewBox="0 0 24 24">
-            <polyline points="20 6 9 17 4 12"></polyline>
-          </svg>
-          <span class="correct-text">Correct!</span>
-        `;
-        
-        // Show box update info
-        const nextBox = progress[currentCard.key];
-        comparisonText.textContent = nextBox === 5 ? "Fact fully mastered (Box 5)!" : `Moved up to Box ${nextBox}`;
-        
-      } else {
-        sessionStreak = 0;
-        
-        // Reset Leitner box back to 1
-        progress[currentCard.key] = 1;
-        
-        // UI incorrect feedback
-        flashcard.classList.add('wrong');
-        feedbackBanner.innerHTML = `
-          <svg style="width:24px;height:24px;stroke:var(--color-wrong);stroke-width:3" viewBox="0 0 24 24">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-          <span class="wrong-text">Incorrect</span>
-        `;
-        
-        comparisonText.textContent = `Your answer: ${userAnswer} (Correct: ${currentCard.ans}). Reset to Box 1.`;
-        
-        // Play visual shake
-        flashcard.classList.add('shake');
-        setTimeout(() => flashcard.classList.remove('shake'), 400);
-      }
-      
-      saveProgress();
-      isFlipped = true;
-      flashcard.classList.add('flipped');
-      answerInput.disabled = true;
-      
-      submitBtn.textContent = 'Next';
-      submitBtn.classList.add('next-state');
-      
-      updateSessionMetricsUI();
-      updateLeitnerBars();
-    }
 
-    function updateSessionMetricsUI() {
-      sessionStreakEl.textContent = sessionStreak;
-      
-      // If gold streak, add animation
-      const streakBadge = document.getElementById('streakBadge');
-      if (sessionStreak >= 10) {
-        streakBadge.classList.add('gold');
-      } else {
-        streakBadge.classList.remove('gold');
-      }
-      
-      if (sessionTotal === 0) {
-        sessionAccuracyEl.textContent = 'Acc: 100%';
-      } else {
-        const acc = Math.round((sessionCorrect / sessionTotal) * 100);
-        sessionAccuracyEl.textContent = `Acc: ${acc}% (${sessionCorrect}/${sessionTotal})`;
-      }
-    }
-
-    // --- EVENT LISTENERS ---
-    
-    // Keypad buttons
-    document.querySelectorAll('.keypad-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const val = btn.getAttribute('data-val');
-        
-        if (val === 'delete') {
-          if (!isFlipped) {
-            answerInput.value = answerInput.value.slice(0, -1);
-            answerInput.focus();
-          }
-        } else if (val === 'submit') {
-          checkAnswer();
-        } else {
-          if (!isFlipped) {
-            answerInput.value += val;
-            answerInput.focus();
-          }
+        // Populate Tier 4 (3s and 4s)
+        for (let i = 2; i <= 9; i++) {
+            if (i !== 3 && i !== 4 && i !== 9 && i !== 5) { // Skip squares, 9s, and tier 1 anchors
+                problemSets[4].push({ f1: 4, f2: i, strategy: `Double-Double: Double ${i}, then double it again!` });
+                problemSets[4].push({ f1: 3, f2: i, strategy: `Double plus one: (2 x ${i}) + ${i}` });
+            }
         }
-      });
-    });
 
-    submitBtn.addEventListener('click', checkAnswer);
+        let activeProblems = [];
+        let currentProblem = null;
 
-    // Support keyboard Enter key
-    answerInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        checkAnswer();
-      }
-    });
+        function startSession() {
+            activeProblems = [];
+            
+            const checkedBoxes = document.querySelectorAll('.config-panel input:checked');
+            if (checkedBoxes.length === 0) {
+                alert('Please select at least one tier.');
+                return;
+            }
 
-    // Keyboard global overrides to maintain input focus
-    document.addEventListener('keydown', (e) => {
-      if (currentTier) {
-        // If practice screen is active
-        if (e.key === 'Backspace') {
-          if (!isFlipped && document.activeElement !== answerInput) {
-            answerInput.focus();
-          }
-        } else if (e.key >= '0' && e.key <= '9') {
-          if (!isFlipped && document.activeElement !== answerInput) {
-            answerInput.focus();
-          }
-        } else if (e.key === 'Enter') {
-          // If Enter pressed anywhere in document
-          if (document.activeElement !== submitBtn) {
-            e.preventDefault();
-            checkAnswer();
-          }
+            checkedBoxes.forEach(box => {
+                const tier = parseInt(box.value);
+                activeProblems.push(...problemSets[tier]);
+            });
+
+            document.getElementById('config').style.display = 'none';
+            document.getElementById('cardContainer').style.display = 'block';
+            document.getElementById('controls').style.display = 'flex';
+            
+            nextCard();
         }
-      }
-    });
 
-    backBtn.addEventListener('click', exitPractice);
+        function nextCard() {
+            const card = document.getElementById('card');
+            card.classList.remove('flipped');
+            
+            setTimeout(() => {
+                // Select random problem from active pool
+                const randIndex = Math.floor(Math.random() * activeProblems.length);
+                currentProblem = activeProblems[randIndex];
+                
+                // Randomize display order for factors unless it's a specific commutative test like 7x6
+                let displayF1 = currentProblem.f1;
+                let displayF2 = currentProblem.f2;
+                
+                if (currentProblem.f1 !== currentProblem.f2 && Math.random() > 0.5 && currentProblem.f1 !== 7 && currentProblem.f2 !== 6) {
+                    displayF1 = currentProblem.f2;
+                    displayF2 = currentProblem.f1;
+                }
 
-    resetAllBtn.addEventListener('click', () => {
-      if (confirm('Are you sure you want to reset all progress? This will delete your box histories and best streak.')) {
-        progress = {};
-        bestStreak = 0;
-        saveProgress();
-        renderMenu();
-      }
-    });
+                document.getElementById('frontText').innerText = `${displayF1} × ${displayF2}`;
+                document.getElementById('strategyHint').innerText = currentProblem.strategy;
+                document.getElementById('backText').innerText = currentProblem.f1 * currentProblem.f2;
+            }, card.classList.contains('flipped') ? 0 : 150); 
+        }
 
-    // --- APP INITIALIZATION ---
-    window.addEventListener('DOMContentLoaded', () => {
-      initTiers();
-      loadProgress();
-      renderMenu();
-    });
-  </script>
+        function flipCard() {
+            document.getElementById('card').classList.toggle('flipped');
+        }
+
+        function exitSession() {
+            document.getElementById('config').style.display = 'block';
+            document.getElementById('cardContainer').style.display = 'none';
+            document.getElementById('controls').style.display = 'none';
+        }
+    </script>
 </body>
 </html>
